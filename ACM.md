@@ -106,8 +106,201 @@ int countDigitOne(int n) {
 当`a/10`的末尾是0或者1, 那么`a`最后一位加上8再除以10, 还是0  
        大于等于2时,`a+8`使得=`a/10`加一   
 ***所以***  
-公式为 （（a + 8 ）/10 ）* m + (a %10 == 1)  * (b +1 )  
-扩展 如果是数字k,那么a加`10-k-1`,三种情况不变  
+公式为 （（a + 8 ）/10 ）* m + (a %10 == 1)  * (b +1 )   
+扩展 如果是数字k,那么a加`10-k-1`,三种情况不变    
+
+## c++出现的string字符串类型  
+```c++
+string s = "Hello";
+
+// 1. 获取长度
+int len = s.length();  // 5
+
+// 2. 拼接
+s += " world";        // s = "Hello world"
+
+// 3. 查找子串
+if (s.find("world") != string::npos) {
+    cout << "找到 'world'" << endl;
+}
+
+// 4. 取子串（从第 6 个字符开始，长度 5）
+string sub = s.substr(6, 5);  // "world"
+
+// 5. 比较
+if (s == "Hello world") {
+    cout << "相等" << endl;
+}
+```  
+| 项目 | C 语言 | C++ string |
+|------|--------|------------|
+| 声明 | `char s[10] = "Hello";` | `string s = "Hello";` |
+| 长度 | `strlen(s)` | `s.length()` |
+| 拼接 | `strcat(s, " world")` | `s = s + " world"` |
+| 复制 | `strcpy(s2, s)` | `s2 = s;` |
+| 内存安全 | ❌ 容易溢出 | ✅ 自动管理 |
+| 操作难度 | ⚠️ 需记库函数 | ✅ 像基本类型一样 | 
+
+**`find`**   
+find 会返回第一个匹配字符的索引（从0开始计数）  
+如果没找到，返回 string::npos（一个很大的数，表示"没找到"）   
+```c++
+#include <iostream>
+#include <string>
+using namespace std;
+
+int main() {
+    string s = "Hello, world!";  // 一个字符串
+    
+    // 查找 "world" 的位置
+    size_t pos = s.find("world");  // 返回第一个 'w' 的位置（索引）
+    
+    if (pos != string::npos) {
+        cout << "找到了! 位置: " << pos << endl;  // 输出: 7
+    } else {
+        cout << "没找到" << endl;
+    }
+    
+    return 0;
+}
+```
+**`substr`**
+```c++
+#include <iostream>
+#include <string>
+using namespace std;
+
+int main() {
+    string s = "Hello, world!";  // 一个字符串
+    
+    // 从位置7开始，取5个字符
+    string sub = s.substr(7, 5);  // 从索引7开始，取5个字符
+    
+    cout << "截取的子串: " << sub << endl;  // 输出: "world"
+    
+    // 从位置0开始，取到结尾
+    string sub2 = s.substr(0);  // 从开头到结尾
+    cout << "整个字符串: " << sub2 << endl;  // 输出: "Hello, world!"
+    
+    return 0;
+}
+```
+substr(start_index, length)：  
+start_index：开始位置（索引）  
+length：要截取的长度（可选，不写则截取到末尾） 
+
+## 埃拉托斯特尼素数筛
+
+原理：从最小的素数开始，逐一排除它的倍数，剩下的就是素数。
+
+### 基本思想
+假设我们要找出 2 到 30 之间的所有素数。
+
+1. 先把 2 到 30 的所有数都列出来。
+2. 第一个数是 2，它是素数。然后我们把 2 的倍数（4,6,8,...30）全部划掉（标记为合数）。
+3. 下一个未被划掉的数是 3，它是素数。然后把 3 的倍数（6,9,12,...30）划掉（注意 6 已经被划掉，但没关系）。
+4. 下一个是 5，它是素数，划掉 5 的倍数（10,15,20,25,30）。
+5. 继续这个过程，直到遍历到 √30 **（因为一个合数必然有一个不大于其平方根的因子）。**
+6. 最后剩下的没有被划掉的数就是素数：2,3,5,7,11,13,17,19,23,29。
+### 在c++的实现步骤
+
+步骤： 
+1. 创建一个大小为 N+1 的布尔数组 isPrime，初始全部设为 true。
+2. 将 isPrime[0] 和 isPrime[1] 设为 false，因为 0 和 1 不是素数。
+3. 从 2 开始遍历到 √N：  
+4. 如果当前数字 i 是素数（即 isPrime[i] == true），则从 i*i 开始，把 i 的所有倍数标记为 false（因为比 i*i 小的倍数已经被更小的素数标记过了）。
+5. 遍历结束后，所有 isPrime[i] == true 的 i 就是素数。  
+
+**为什么从 i*i 开始？**
+因为 i 的倍数中，小于 i*i 的倍数（比如 2*i, 3*i, ..., (i-1)*i）一定已经被比 i 小的素数标记过了。例如，当 i=5 时，2*5=10 在之前 i=2 时已经被标记，3*5=15 在 i=3 时被标记，4*5=20 在 i=2 时也被标记，所以我们直接从 5*5=25 开始标记。
+
+*ps:`sqrt()`是求平方根的函数,*
+
+```c++
+#include <iostream>
+#include <vector>
+#include <cmath>   // 为了使用 sqrt()
+
+using namespace std;
+
+int main() {
+    int n;
+    //获取上限n
+    cin >> n;
+
+    if (n < 2) {
+        //1和0不是素数
+        return 0;
+    }
+
+    // 创建一个布尔向量，大小为 n+1，初始全部为 true
+    vector<bool> isPrime(n + 1, true);
+
+    // 0 和 1 不是素数
+    isPrime[0] = isPrime[1] = false;
+
+    // 从 2 开始遍历到 sqrt(n)
+    //i*i<=n可以避免误差,速度更快,sqrt返回浮点数
+    for (int i = 2; i <= sqrt(n); i++) {
+        if (isPrime[i]) {
+            // 将 i 的倍数标记为 false，从 i*i 开始
+            for (int j = i * i; j <= n; j += i) {
+                isPrime[j] = false;
+            }
+        }
+    }
+
+    // 输出2到n的所有素数
+    for (int i = 2; i <= n; i++) {
+        if (isPrime[i]) {
+            cout << i << " ";
+        }
+    }
+    cout << endl;
+
+    return 0;
+}
+```
+## memset的使用
+函数原型（定义在 `<cstring> `或 `<string.h>` 头文件中）：
+```c++
+void* memset(void* ptr, int value, size_t num);
+```
+### 功能：
+将从 `ptr` 开始的连续 `num` 个字节的每个字节都设置为 `value`（仅取 `value` 的低 8 位，即转换为 `unsigned char` 后的值）。函数返回 `ptr`。
+### 用法
+初始化为 0：对任意类型的数组，memset(arr, 0, sizeof(arr)); 会将所有字节置零，从而使数值类型变量变为 0，指针变为空指针等。
+初始化为 -1：对有符号整型数组，memset(arr, -1, sizeof(arr)); 会将每个字节设为 0xFF，这样每个整数的二进制表示为全 1，对应补码的 -1。
+字符数组/字符串：因为 char 类型正好是一个字节，所以可以安全地设置任意字符值，例如 memset(str, 'A', 10);。
+
+## 负数的取模
+### 规则：
+对于整数 a 和 b（b ≠ 0），表达式 a % b 的结果满足：
+(a/b)∗b+(a%b)
+其中除法 a / b 采用 向零取整（truncation toward zero），即直接舍弃小数部分。
+由此可推出：
+1. 余数的 符号与被除数 a 相同（或为零）。
+2. 余数的绝对值严格小于除数的绝对值。
+### 例子
+|-------|--------|---------------------------------------------|   
+| -5 % 2	| -1	| -5 / 2 = -2（向零取整），-2 * 2 + (-1) = -5 |  
+| 5 % -2	| 1	| 5 / -2 = -2（向零取整），-2 * (-2) + 1 = 5 |  
+| -5 % -2	| -1 |	-5 / -2 = 2（向零取整），2 * (-2) + (-1) = -5 |  
+| 0 % 3	 | 0 |	被除数为 0，余数为 0 |  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
